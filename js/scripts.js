@@ -13,11 +13,21 @@ var layer = new Kinetic.Layer();
 
 // make circle
 var circle = new Kinetic.Circle({
-  x: stage.getWidth() / 2,
-  y: stage.getHeight() / 2,
+  x: 350,
+  y: 100,
   radius: 20,
   fill: 'red',
   stroke: 'black',
+  strokeWidth: 4
+});
+
+var targetCircle = new Kinetic.Circle({
+  x: 100,
+  y: 100,
+  radius: 20,
+  fill: 'blue',
+  stroke: 'black',
+  opacity: 0.1,
   strokeWidth: 4
 });
 
@@ -26,7 +36,7 @@ var circle = new Kinetic.Circle({
 var text = new Kinetic.Text({
   x: 10,
   y: 10,
-  fontFamily: 'Calibri',
+  fontFamily: 'Helvetica',
   fontSize: 24,
   text: 'Hit an Arrow Key!',
   fill: 'black'
@@ -35,6 +45,7 @@ var text = new Kinetic.Text({
 // add circle and text to layer
 layer.add(text);
 layer.add(circle);
+layer.add(targetCircle)
 
 // add the layer to the stage
 stage.add(layer);
@@ -129,12 +140,12 @@ KeyboardJS.on('right',
 
 // ======== Moving Animations ========
 
-var velocity = 2000;
+var velocity = 2;
 
 var moveUp = new Kinetic.Animation(function(frame) {
 
   var currY = circle.getY();
-  circle.setY(currY - frame.time / velocity)
+  circle.setY(currY - velocity)
   checkCirclePosition();
 
 }, layer);
@@ -142,7 +153,7 @@ var moveUp = new Kinetic.Animation(function(frame) {
 var moveDown = new Kinetic.Animation(function(frame) {
 
   var currY = circle.getY();
-  circle.setY(currY + frame.time / velocity)
+  circle.setY(currY + velocity)
   checkCirclePosition();
 
 }, layer);
@@ -150,7 +161,7 @@ var moveDown = new Kinetic.Animation(function(frame) {
 var moveLeft = new Kinetic.Animation(function(frame) {
 
   var currX = circle.getX();
-  circle.setX(currX - frame.time / velocity)
+  circle.setX(currX - velocity)
   checkCirclePosition();
 
 }, layer);
@@ -158,17 +169,38 @@ var moveLeft = new Kinetic.Animation(function(frame) {
 var moveRight = new Kinetic.Animation(function(frame) {
 
   var currX = circle.getX();
-  circle.setX(currX + frame.time / velocity)
+  circle.setX(currX + velocity)
   checkCirclePosition();
 
 }, layer);
 
 // function for 
 function checkCirclePosition() {
-  var x = Math.round(circle.getX());
-  var y = Math.round(circle.getY());
-  text.setText('Circle Position = x: ' + x + ', y: ' + y);
+  
+  
+  var distance = getDistanceFrom(targetCircle);
+  // check dist from target and update opacity accordingly
+
+  if (distance <= 200) {
+    targetCircle.setOpacity(30/distance);
+  } else {
+    targetCircle.setOpacity(0.1);
+  }
+
+
+  // for debugging
+  var pos = circle.getAbsolutePosition();
+  text.setText('Circle Position = {x: ' + pos.x + ', y: ' + pos.y + "} Distance = " + distance);
+
+  // redraw layer when done. Possibly move to conditional
   layer.draw();
+}
+
+function getDistanceFrom(target) {
+  var pos = circle.getAbsolutePosition();
+  var targ_pos = target.getAbsolutePosition();
+  var distance = Math.sqrt( Math.pow((pos.x - targ_pos.x), 2) + Math.pow((pos.y - targ_pos.y), 2)  );
+  return distance;
 }
 
 
