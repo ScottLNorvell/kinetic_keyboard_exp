@@ -10,11 +10,12 @@ var stage = new Kinetic.Stage({
 
 // make layer
 var layer = new Kinetic.Layer();
+var play_layer = new Kinetic.Layer();
 
 // make circle
 var circle = new Kinetic.Circle({
-  x: 350,
-  y: 100,
+  x: scr_width / 2,
+  y: scr_height / 2,
   radius: 20,
   fill: 'red',
   stroke: 'black',
@@ -31,6 +32,38 @@ var targetCircle = new Kinetic.Circle({
   strokeWidth: 4
 });
 
+var targetCircle2 = new Kinetic.Circle({
+  x: scr_width - 100,
+  y: 100,
+  radius: 20,
+  fill: 'green',
+  stroke: 'black',
+  opacity: 0.1,
+  strokeWidth: 4
+});
+
+var targetCircle3 = new Kinetic.Circle({
+  x: scr_width - 300,
+  y: 500,
+  radius: 20,
+  fill: 'purple',
+  stroke: 'black',
+  opacity: 0.1,
+  strokeWidth: 4
+});
+
+var targetCircle4 = new Kinetic.Circle({
+  x: 300,
+  y: 500,
+  radius: 20,
+  fill: 'yellow',
+  stroke: 'black',
+  opacity: 0.1,
+  strokeWidth: 4
+});
+
+// array of target circle points (eventually returned from function that makes circles)
+// var target_points = [ {x: 100, y: 100}, {x:500, y:300} ]
 
 // make text
 var text = new Kinetic.Text({
@@ -44,11 +77,15 @@ var text = new Kinetic.Text({
 
 // add circle and text to layer
 layer.add(text);
-layer.add(circle);
-layer.add(targetCircle)
+play_layer.add(circle);
+layer.add(targetCircle);
+layer.add(targetCircle2);
+layer.add(targetCircle3);
+layer.add(targetCircle4);
 
 // add the layer to the stage
 stage.add(layer);
+stage.add(play_layer);
 
 
 // ======== Key Events! ========
@@ -148,7 +185,7 @@ var moveUp = new Kinetic.Animation(function(frame) {
   circle.setY(currY - velocity)
   checkCirclePosition();
 
-}, layer);
+}, play_layer);
 
 var moveDown = new Kinetic.Animation(function(frame) {
 
@@ -156,7 +193,7 @@ var moveDown = new Kinetic.Animation(function(frame) {
   circle.setY(currY + velocity)
   checkCirclePosition();
 
-}, layer);
+}, play_layer);
 
 var moveLeft = new Kinetic.Animation(function(frame) {
 
@@ -164,7 +201,7 @@ var moveLeft = new Kinetic.Animation(function(frame) {
   circle.setX(currX - velocity)
   checkCirclePosition();
 
-}, layer);
+}, play_layer);
 
 var moveRight = new Kinetic.Animation(function(frame) {
 
@@ -172,27 +209,28 @@ var moveRight = new Kinetic.Animation(function(frame) {
   circle.setX(currX + velocity)
   checkCirclePosition();
 
-}, layer);
+}, play_layer);
 
-// function for 
+var target_objects = [targetCircle, targetCircle2, targetCircle3, targetCircle4]
+
+// function for circle interactions
 function checkCirclePosition() {
-  
-  
-  var distance = getDistanceFrom(targetCircle);
-  // check dist from target and update opacity accordingly
-
-  if (distance <= 200) {
-    targetCircle.setOpacity(30/distance);
-  } else {
-    targetCircle.setOpacity(0.1);
-  }
-
-
-  // for debugging
+  var distance;
   var pos = circle.getAbsolutePosition();
-  text.setText('Circle Position = {x: ' + pos.x + ', y: ' + pos.y + "} Distance = " + distance);
+  
 
-  // redraw layer when done. Possibly move to conditional
+  for (i in target_objects) {
+    distance = getDistanceFrom(target_objects[i]);
+
+    if (distance <= 40) {
+      text.setText('I touched the circle there!');
+    } else if (distance <= 200) {
+      target_objects[i].setOpacity(30/distance);
+      text.setText('Circle Position = {x: ' + pos.x + ', y: ' + pos.y + "} Distance = " + Math.round(distance));
+    } else {
+      target_objects[i].setOpacity(0.1);
+    }
+  }
   layer.draw();
 }
 
