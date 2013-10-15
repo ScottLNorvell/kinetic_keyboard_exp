@@ -14,6 +14,8 @@ var tracks = [114736768, 114912487, 115023431, 114782237];
 
 var test_tracks;
 
+var velocity = 2;
+
 var genre = 'folk'; //prompt('genre please');
 
 window.onload = function() {
@@ -72,7 +74,7 @@ function drawGame(track_data) {
     fill: 'red',
     stroke: 'black',
     strokeWidth: 4,
-    velocity: 2
+    velocity: velocity
   });
 
   console.log("track_data = ", test_tracks)
@@ -210,7 +212,10 @@ function drawGame(track_data) {
       if (!pressed['space']) {
         pressed['space'] = true;
         console.log('pressed space');
-        avatar.setAttr('velocity', 5);
+        // avatar.setAttr('velocity', 5);
+        // slowDown.stop();
+        speedUp.play();
+        setTimeout( function() { speedUp.reverse() }, 500);
         // moveDown.stop();
         // moveUp.start();      
       }
@@ -220,7 +225,9 @@ function drawGame(track_data) {
       if (pressed['space']) {
         pressed['space'] = false;
         console.log('released space');
-        avatar.setAttr('velocity', 2);
+        // avatar.setAttr('velocity', 2);
+        // speedUp.reverse();
+        // slowDown.play();
         // moveUp.stop(); 
       }
   });
@@ -228,7 +235,21 @@ function drawGame(track_data) {
 
   // ======== Moving Animations ========
 
-  var velocity = 2;
+  // speed up tween
+
+  var speedUp = new Kinetic.Tween({
+    node: avatar,
+    velocity: 4,
+    duration: .5,
+    easing: Kinetic.Easings.StrongEaseOut
+  });
+
+  // var slowDown = new Kinetic.Tween({
+  //   node: avatar,
+  //   velocity: velocity,
+  //   duration: 1,
+  //   easing: Kinetic.Easings.StrongEaseOut
+  // });
 
   var moveUp = new Kinetic.Animation(function(frame) {
 
@@ -285,7 +306,7 @@ function checkCirclePosition() {
       volume = volume_parabolic;
       targObj.setOpacity(30/distance);
       // targSong.setVolume(volume);
-      text.setText('Circle Position = {x: ' + pos.x + ', y: ' + pos.y + "} Distance = " + Math.round(distance) + " Volume = " + Math.round(volume));
+      text.setText('Circle Position = {x: ' + Math.round(pos.x) + ', y: ' + Math.round(pos.y) + "} Distance = " + Math.round(distance) + " Volume = " + Math.round(volume));
     } else {
       targObj.setOpacity(0.1);
       // targSong.setVolume(0);
