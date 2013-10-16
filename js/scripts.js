@@ -1,16 +1,13 @@
-var target_objects = [], avatar, layer, text;
+var target_objects = [], avatar, layer, text, songs = {};
 
-var songs = {};
+var colors = ['yellow', 'blue', 'green', 'purple', 'orange']
 
-var circ_points = [
- { x: 100, y: 100, color: "yellow" },
- { x: 650, y: 100, color: "blue" },
- { x: 1050, y: 300, color: "green" },
- { x: 100, y: 100, color: "purple" },
- { x: 1050, y: 500, color: "orange" }
-]
+// keep track of keys pressed
+var pressed = {}
 
-var tracks = [114736768, 114912487, 115023431, 114782237];
+var circ_points;
+
+// var tracks = [114736768, 114912487, 115023431, 114782237];
 
 var test_tracks;
 
@@ -18,7 +15,32 @@ var velocity = 2;
 
 var genre = 'folk'; //prompt('genre please');
 
+var scr_width;
+var scr_height;
+
 window.onload = function() {
+
+  scr_width = window.innerWidth;
+  scr_height = window.innerHeight;
+  limits = getLimits(scr_height, scr_width);
+
+  circ_points = randomLocations(limits, colors);
+
+  drawGame();
+}
+
+function redrawGame() {
+  scr_width = window.innerWidth;
+  scr_height = window.innerHeight;
+  limits = getLimits(scr_height, scr_width);
+  KeyboardJS.clear('up');
+  KeyboardJS.clear('down');
+  KeyboardJS.clear('left');
+  KeyboardJS.clear('right');
+  KeyboardJS.clear('space');
+  alerted = false;
+
+  circ_points = randomLocations(limits, colors);
 
   drawGame();
 }
@@ -51,8 +73,9 @@ window.onload = function() {
 // }
 
 function drawGame(track_data) {
-  var scr_width = window.innerWidth;
-  var scr_height = window.innerHeight;
+  // var scr_width = window.innerWidth;
+  // var scr_height = window.innerHeight;
+  console.log('w = ' + scr_width + ', h = ' + scr_height)
 
   // make stage
   var stage = new Kinetic.Stage({
@@ -68,8 +91,8 @@ function drawGame(track_data) {
 
   // make avatar
   avatar = new Kinetic.Circle({
-    x: 350,//scr_width / 2,
-    y: 100,//scr_height / 2,
+    x: scr_width / 2,
+    y: scr_height / 2,
     radius: 20,
     fill: 'red',
     stroke: 'black',
@@ -77,7 +100,7 @@ function drawGame(track_data) {
     velocity: velocity
   });
 
-  console.log("track_data = ", test_tracks)
+  // console.log("track_data = ", test_tracks)
 
   $.each(circ_points, function(i, track) {
     var pt = circ_points[i];
@@ -118,9 +141,6 @@ function drawGame(track_data) {
 
 
   // ======== Key Events! ========
-
-  // keep track of keys pressed
-  var pressed = {}
 
   // 'up'
   KeyboardJS.on('up',
@@ -211,24 +231,15 @@ function drawGame(track_data) {
       // prevent repeating
       if (!pressed['space']) {
         pressed['space'] = true;
-        console.log('pressed space');
-        // avatar.setAttr('velocity', 5);
-        // slowDown.stop();
         speedUp.play();
         setTimeout( function() { speedUp.reverse() }, 500);
-        // moveDown.stop();
-        // moveUp.start();      
+             
       }
     },
     // key release function 
     function(e, keysPressed, keyCombo) { 
       if (pressed['space']) {
         pressed['space'] = false;
-        console.log('released space');
-        // avatar.setAttr('velocity', 2);
-        // speedUp.reverse();
-        // slowDown.play();
-        // moveUp.stop(); 
       }
   });
 
@@ -236,7 +247,6 @@ function drawGame(track_data) {
   // ======== Moving Animations ========
 
   // speed up tween
-
   var speedUp = new Kinetic.Tween({
     node: avatar,
     velocity: 4,
@@ -283,14 +293,22 @@ function drawGame(track_data) {
 
   }, avatar_layer);
 
-  // target_objects = [targetCircle, targetCircle2, targetCircle3, targetCircle4]
 }
 
+var alerted = false;
 // function for circle interactions
 function checkCirclePosition() {
   var distance, volume;
   var pos = avatar.getAbsolutePosition();
   
+  if (pos.x < 0 || pos.x > window.innerWidth || pos.y < 0 || pos.y > window.innerHeight ) {
+    if (!alerted) {
+      $('#container').html('')
+      alerted = true;
+      redrawGame();
+      return
+    }
+  }
 
   for (i in target_objects) {
     var targObj = target_objects[i];
@@ -301,7 +319,7 @@ function checkCirclePosition() {
       text.setText('I touched the circle there!');
       // targSong.setVolume(100);
     } else if (distance <= 200) {
-      var volume_linear = -5/8 * distance + 125;
+      // var volume_linear = -5/8 * distance + 125;
       var volume_parabolic = Math.pow((distance - 200),2) / 256;
       volume = volume_parabolic;
       targObj.setOpacity(30/distance);
@@ -332,38 +350,64 @@ function getDistanceFrom(target) {
   }
 }
 
+function randomPt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
+function randomLocations(limits, colors) {
+  var circ_points = [];
+  limits.splice(randomPt(0, limits.length - 1), 1);
+  $.each(limits, function(i) {
+    var limit = limits[i];
+    var circ_point = {};
+    circ_point.x = randomPt(limit.xMin,limit.xMax);
+    circ_point.y = randomPt(limit.yMin,limit.yMax);
+    circ_point.color = colors[i];
+    circ_points.push(circ_point);
+  });
+  return circ_points
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// example of moving left and up!
-// var amplitude = 75;
-// var period = 1000;
-// // in ms
-// var centerX = stage.getWidth() / 2;
-// var centerY = stage.getHeight() / 2;
-
-// var anim = new Kinetic.Animation(function(frame) {
-//   hexagon.setX(amplitude * Math.sin(frame.time * 2 * Math.PI / period) + centerX);
-//   hexagon.setY(amplitude * Math.sin(frame.time * 2 * Math.PI / period) + centerY);
-  
-// }, layer);
-
-// anim.start();
+function getLimits(height, width) {
+  var b = 75, //buffer
+      x1 = Math.floor(width/3),
+      x2 = Math.floor(width - width/3),
+      y1 = Math.floor(height/2);
+  return [{ //a
+      xMin: b,
+      xMax: x1 - b,
+      yMin: b,
+      yMax: y1 - b
+    },
+    { //b
+      xMin: x1 + b,
+      xMax: x2 - b,
+      yMin: b,
+      yMax: y1 - b
+    },
+    { //c
+      xMin: x2 + b,
+      xMax: width - b,
+      yMin: b,
+      yMax: y1 - b
+    },
+    { //d
+      xMin: b,
+      xMax: x1 - b,
+      yMin: y1 + b,
+      yMax: height - b
+    },
+    { //e
+      xMin: x1 + b,
+      xMax: x2 - b,
+      yMin: y1 + b,
+      yMax: height - b
+    },
+    { //f
+      xMin: x2 + b,
+      xMax: width - b,
+      yMin: y1 + b,
+      yMax: height - b
+    }
+  ]
+}
